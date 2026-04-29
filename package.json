@@ -1,0 +1,30 @@
+{
+  "name": "cdk",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Claude Development Kit — drive the Claude Code CLI from Electron apps",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.4.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

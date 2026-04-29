@@ -1,0 +1,29 @@
+{
+  "name": "@claude-cdk/core",
+  "version": "0.0.0",
+  "description": "Core process driver, stream parser, and session manager for CDK. Electron-free.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

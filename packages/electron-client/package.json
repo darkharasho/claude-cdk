@@ -1,0 +1,31 @@
+{
+  "name": "@claude-cdk/electron-client",
+  "version": "0.0.0",
+  "description": "Electron renderer-process client for CDK — speaks to @claude-cdk/electron-host over IPC.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@claude-cdk/core": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

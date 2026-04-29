@@ -1,0 +1,37 @@
+{
+  "name": "@claude-cdk/electron-host",
+  "version": "0.0.0",
+  "description": "Electron main-process glue for CDK — registers ipcMain handlers around @claude-cdk/core.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@claude-cdk/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "electron": ">=28"
+  },
+  "peerDependenciesMeta": {
+    "electron": { "optional": true }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
