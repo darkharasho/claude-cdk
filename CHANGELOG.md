@@ -43,6 +43,7 @@ Initial pre-release. All seven phases of the DESIGN.md plan are implemented.
   `tool.permission_request` events are informational only.
 - **`--bare` is API-key-only.** Forces `ANTHROPIC_API_KEY` and refuses
   OAuth/keychain reads. Off by default; opt in via `SessionOptions.bare`.
+
 ### Tested platforms
 
 - Linux (ubuntu-latest), Windows (windows-latest), and macOS
