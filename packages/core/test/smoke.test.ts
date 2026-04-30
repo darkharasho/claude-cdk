@@ -7,11 +7,17 @@ describe('@claude-cdk/core smoke', () => {
     expect(host).toBeInstanceOf(CDKHost);
   });
 
-  it('detect() resolves with found:false in Phase 0 stub', async () => {
+  it('detect() resolves to a non-throwing DetectResult', async () => {
     const host = new CDKHost();
     const result = await host.detect();
-    expect(result.found).toBe(false);
-    expect(result.authMode).toBe('unknown');
+    // Must never throw; shape must always be valid.
+    expect(result).toMatchObject({
+      found: expect.any(Boolean),
+      authMode: 'unknown',
+    });
+    if (!result.found) {
+      expect(result.reason).toBeTruthy();
+    }
   });
 
   it('CDKEvent discriminated union accepts every event type literal', () => {

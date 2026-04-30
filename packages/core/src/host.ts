@@ -11,21 +11,20 @@ import type {
   SessionMeta,
   SessionOptions,
 } from './api.js';
+import { detectClaude } from './detect.js';
 import type { CDKEvent } from './events.js';
 
 export class CDKHost {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(_opts?: CDKHostOptions) {
-    // Phase 1: store opts for spawn.
+  private readonly opts: CDKHostOptions;
+
+  constructor(opts: CDKHostOptions = {}) {
+    this.opts = opts;
   }
 
   detect(): Promise<DetectResult> {
-    // Phase 1: search PATH + common install locations, run `claude --version`.
-    // Must never throw; return { found: false, reason } on failure.
-    return Promise.resolve({
-      found: false,
-      authMode: 'unknown',
-      reason: 'CDKHost.detect not yet implemented (Phase 1)',
+    return detectClaude({
+      ...(this.opts.binaryPath !== undefined ? { binaryPath: this.opts.binaryPath } : {}),
+      ...(this.opts.env !== undefined ? { env: this.opts.env } : {}),
     });
   }
 
