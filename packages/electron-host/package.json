@@ -22,6 +22,9 @@
   "dependencies": {
     "@claude-cdk/core": "workspace:*"
   },
+  "devDependencies": {
+    "@claude-cdk/electron-client": "workspace:*"
+  },
   "peerDependencies": {
     "electron": ">=28"
   },
