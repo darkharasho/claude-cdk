@@ -7,7 +7,6 @@
 import type {
   CDKHostOptions,
   DetectResult,
-  PermissionDecision,
   Session,
   SessionMeta,
   SessionOptions,
@@ -53,4 +52,4 @@ export class CDKHost {
 }
 
 // Re-export convenience aliases used by callers.
-export type { CDKEvent, PermissionDecision };
+export type { CDKEvent };

@@ -3,7 +3,7 @@
  * All implementations here are stubs that will be filled in during later phases.
  */
 
-import type { CDKEvent } from './events.js';
+import type { CDKEvent, PermissionMode } from './events.js';
 
 export interface DetectResult {
   found: boolean;
@@ -26,8 +26,27 @@ export interface SessionOptions {
   model?: string;
   allowedTools?: string[];
   disallowedTools?: string[];
+  /** Restrict the built-in tool set. */
+  tools?: string[];
   mcpServers?: Record<string, McpServerConfig>;
   systemPrompt?: string;
+  appendSystemPrompt?: string;
+  permissionMode?: PermissionMode;
+  /**
+   * Pass `--bare`. Requires `ANTHROPIC_API_KEY` (OAuth/keychain are not read).
+   * Default `false`. Subscription users must leave this off.
+   */
+  bare?: boolean;
+  /** Pass `--include-partial-messages` for delta streaming. */
+  includePartialMessages?: boolean;
+  /** Pass `--include-hook-events`. */
+  includeHookEvents?: boolean;
+  /** Pass `--no-session-persistence`. */
+  noSessionPersistence?: boolean;
+  /** Pass `--session-id <uuid>` to pre-assign a session UUID. */
+  sessionId?: string;
+  /** Pass `--resume <id>` to resume an existing session. */
+  resumeSessionId?: string;
 }
 
 export interface SessionMeta {
@@ -38,8 +57,6 @@ export interface SessionMeta {
   lastActiveAt: number;
 }
 
-export type PermissionDecision = 'allow' | 'deny' | 'always_allow';
-
 export interface CDKHostOptions {
   binaryPath?: string;
   env?: Record<string, string>;
@@ -48,7 +65,6 @@ export interface CDKHostOptions {
 export interface Session {
   readonly id: string;
   send(prompt: string): AsyncIterable<CDKEvent>;
-  respondToPermission(requestId: string, decision: PermissionDecision): void;
   abort(): Promise<void>;
   close(): Promise<void>;
 }

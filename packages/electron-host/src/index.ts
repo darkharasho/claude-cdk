@@ -32,7 +32,6 @@ export type {
   CDKEvent,
   DetectResult,
   McpServerConfig,
-  PermissionDecision,
   Session,
   SessionMeta,
   SessionOptions,

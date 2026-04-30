@@ -44,12 +44,19 @@ All events share a base shape:
 ```ts
 interface BaseEvent {
   type: string;        // discriminator
-  sessionId: string;   // which session
-  turnId: string;      // which turn within the session
-  seq: number;         // monotonic per-session sequence number
-  ts: number;          // ms epoch
+  sessionId: string;   // which session (from wire `session_id`)
+  turnId: string;      // which turn within the session (synthesized by parser)
+  seq: number;         // monotonic per-session sequence number (synthesized)
+  ts: number;          // ms epoch (synthesized on receive)
+  uuid?: string;       // wire `uuid`, when present
 }
 ```
+
+> **Wire reality.** The CLI's stream-json wire format does not carry
+> `turnId`/`seq`/`ts`. The parser synthesizes them: `seq` is a monotonic
+> counter per session, `ts` is `Date.now()` at receive, `turnId` is bumped
+> on each new user→result turn boundary. Wire `session_id` and `uuid` map
+> through verbatim.
 
 ### Lifecycle
 
@@ -58,10 +65,20 @@ interface SessionInitEvent extends BaseEvent {
   type: "session.init";
   model: string;
   cwd: string;
-  allowedTools: string[];
-  mcpServers: { name: string; status: "connected" | "failed"; error?: string }[];
-  plugins:    { name: string; version: string; status: "loaded" | "failed" }[];
-  cliVersion: string;
+  permissionMode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan";
+  tools: string[];                                                    // wire `tools`
+  mcpServers: { name: string; status: "connected" | "failed" | "pending"; error?: string }[];
+  plugins:    { name: string; version?: string; path?: string; source?: string }[];
+  slashCommands: string[];
+  agents: string[];
+  skills: string[];
+  cliVersion: string;                                                 // wire `claude_code_version`
+  outputStyle?: string;
+  apiKeySource: "none" | "user" | "project" | "anthropic" | string;   // observed: "none" for OAuth/keychain
+  authMode: "subscription" | "apikey" | "unknown";                    // derived from apiKeySource
+  fastModeState?: string;
+  analyticsDisabled?: boolean;
+  memoryPaths?: Record<string, string>;
 }
 
 interface SessionReadyEvent extends BaseEvent {
@@ -71,10 +88,17 @@ interface SessionReadyEvent extends BaseEvent {
 interface SessionDoneEvent extends BaseEvent {
   type: "session.done";
   stopReason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "error" | "aborted";
-  result?: string;       // final assistant text, if any
+  result?: string;                            // final assistant text, if any
   usage: TokenUsage;
   costUsd?: number;
-  durationMs: number;
+  durationMs: number;                         // wire `duration_ms`
+  durationApiMs?: number;                     // wire `duration_api_ms`
+  numTurns?: number;                          // wire `num_turns`
+  isError: boolean;                           // wire `is_error`
+  apiErrorStatus?: number | null;             // wire `api_error_status`, e.g. 404
+  terminalReason?: string;                    // wire `terminal_reason`, e.g. "completed"
+  permissionDenials?: { toolName: string; toolUseId: string; toolInput: unknown }[];
+  modelUsage?: Record<string, unknown>;       // wire `modelUsage`, per-model breakdown
 }
 
 interface SessionErrorEvent extends BaseEvent {
@@ -140,16 +164,21 @@ interface ToolResultEvent extends BaseEvent {
 
 interface PermissionRequestEvent extends BaseEvent {
   type: "tool.permission_request";
-  requestId: string;     // pass to session.respondToPermission()
   toolName: string;
+  toolUseId: string;
   input: Record<string, unknown>;
   rationale?: string;
 }
 ```
 
-> Permission **responses** are not events. They're a method call on the session:
-> `session.respondToPermission(requestId, decision)`. This avoids shipping
-> closures across the IPC boundary, which is fragile.
+> **Permission flow in `-p` mode is preapproval-only.** The CLI does not
+> prompt interactively; non-allowed tool calls are auto-denied with a
+> synthetic `tool_result` carrying `is_error: true`. The parser emits
+> `tool.permission_request` informationally when it sees this denial
+> pattern (and from `result.permission_denials` retroactively). Consumers
+> configure tools up-front via `SessionOptions.allowedTools` /
+> `disallowedTools` / `permissionMode`. There is no runtime
+> `respondToPermission()` API in this CLI version.
 
 ### System
 
@@ -178,6 +207,48 @@ interface WarningEvent extends BaseEvent {
   type: "system.warning";
   message: string;
   code?: string;
+}
+
+interface HookStartedEvent extends BaseEvent {
+  type: "system.hook_started";
+  hookId: string;
+  hookName: string;          // e.g. "SessionStart:startup"
+  hookEvent: string;         // e.g. "SessionStart"
+}
+
+interface HookResponseEvent extends BaseEvent {
+  type: "system.hook_response";
+  hookId: string;
+  hookName: string;
+  hookEvent: string;
+  outcome: "success" | "failure" | string;
+  exitCode: number;
+  stdout?: string;
+  stderr?: string;
+  output?: string;           // raw `output` field from wire
+}
+
+interface PostTurnSummaryEvent extends BaseEvent {
+  type: "system.post_turn_summary";
+  summarizesUuid: string;
+  statusCategory: string;    // e.g. "review_ready"
+  statusDetail: string;
+  needsAction: string;
+}
+
+interface SystemStatusEvent extends BaseEvent {
+  type: "system.status";
+  status: string;            // e.g. "requesting"
+}
+
+interface RateLimitEvent extends BaseEvent {
+  type: "system.rate_limit";
+  status: "allowed" | "rejected" | string;
+  rateLimitType: string;     // e.g. "five_hour"
+  resetsAt?: number;         // epoch seconds
+  overageStatus?: string;
+  overageDisabledReason?: string;
+  isUsingOverage?: boolean;
 }
 ```
 
@@ -214,6 +285,8 @@ export type CDKEvent =
   | ToolUseStartEvent | ToolUseCompleteEvent | ToolResultEvent
   | PermissionRequestEvent
   | ApiRetryEvent | CompactionEvent | PluginInstallEvent | WarningEvent
+  | HookStartedEvent | HookResponseEvent | PostTurnSummaryEvent
+  | SystemStatusEvent | RateLimitEvent
   | UsageUpdateEvent | UnknownEvent;
 ```
 
@@ -251,20 +324,32 @@ interface SessionOptions {
   model?: string;
   allowedTools?: string[];
   disallowedTools?: string[];
+  tools?: string[];                    // restrict the built-in tool set
   mcpServers?: Record<string, McpServerConfig>;
   systemPrompt?: string;
+  appendSystemPrompt?: string;
+  permissionMode?: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan";
+  bare?: boolean;                      // pass --bare; requires ANTHROPIC_API_KEY (no OAuth/keychain)
+  includePartialMessages?: boolean;    // pass --include-partial-messages for delta streaming
+  includeHookEvents?: boolean;         // pass --include-hook-events
+  noSessionPersistence?: boolean;      // pass --no-session-persistence
+  sessionId?: string;                  // pass --session-id <uuid>
+  resumeSessionId?: string;            // pass --resume <id>
 }
 
 class Session {
   readonly id: string;
   send(prompt: string): AsyncIterable<CDKEvent>;
-  respondToPermission(requestId: string, decision: PermissionDecision): void;
   abort(): Promise<void>;
   close(): Promise<void>;
 }
-
-type PermissionDecision = "allow" | "deny" | "always_allow";
 ```
+
+> **No `respondToPermission()` API.** As documented under §Event Taxonomy,
+> the CLI in `-p` mode does not support runtime permission prompts.
+> Tools are configured up-front via `allowedTools`/`disallowedTools`/
+> `permissionMode` and denied calls are surfaced through
+> `tool.permission_request` events for the consumer's UI.
 
 `detect()` must **never throw**. Return `{ found: false, reason }` on failure
 so callers can render a "Claude Code not installed" UI state.
@@ -291,23 +376,37 @@ so callers can render a "Claude Code not installed" UI state.
   run `claude --version`, parse the result
 - Auth state detection beyond "binary works" is unreliable without making a
   real call. Initial contract: `authMode: "unknown"`. Improve later if needed.
-- Spawn wrapper around the CLI in `--bare` mode with stream-json output.
-  Tentative arg shape (verify against `claude -p --help` first):
+- Spawn wrapper around the CLI in `-p` (print) mode with stream-json output.
+  **Verified arg shape against CLI 2.1.119:**
 
   ```
-  claude --bare -p --output-format stream-json --verbose
-         --input-format stream-json
-         [--allowedTools ...]
-         [--cwd ...]
-         [--resume <sessionId>]
+  claude -p
+         --output-format stream-json
+         --verbose                              # required for stream events
+         --input-format stream-json             # for streaming input
+         [--include-partial-messages]           # opt-in delta streaming
+         [--allowed-tools <list>]
+         [--disallowed-tools <list>]
+         [--tools <list>]                       # restrict built-in set
+         [--model <name>]
+         [--system-prompt <text>] | [--append-system-prompt <text>]
+         [--mcp-config <path-or-json>]
+         [--permission-mode default|auto|acceptEdits|bypassPermissions|dontAsk|plan]
+         [--no-session-persistence]
+         [--session-id <uuid>] | [--resume <id>]
+         [--bare]                               # opt-in; forces ANTHROPIC_API_KEY
   ```
 
-- Handle child process lifecycle: kill on parent exit (`tree-kill`), forward
-  `SIGINT`, capture stderr for diagnostics.
+  - `--cwd` does **not** exist as a CLI flag. Working directory is set on
+    the child process via `spawn(cmd, args, { cwd })`.
+  - When the prompt is passed as argv, redirect stdin to `/dev/null` to
+    avoid the CLI's "no stdin in 3s" warning.
+  - `--bare` forces `ANTHROPIC_API_KEY`/`apiKeyHelper` auth; OAuth and
+    keychain are not read in bare mode. So `bare: true` is incompatible
+    with subscription-only users. Default `bare: false`.
 
-**Research item:** the exact stdin/stdout contract of `claude --bare` with
-`--input-format stream-json`. Run it manually and save a few example sessions
-before locking in the spawn args.
+- Handle child process lifecycle: kill on parent exit, forward `SIGINT`,
+  capture stderr for diagnostics.
 
 ### Phase 2 — Stream parser (½ day)
 
@@ -340,21 +439,27 @@ every later phase trivial to verify.
 - Session metadata cached in memory; canonical state lives in
   `~/.claude/projects/` and is reached via the CLI's own resume mechanism
 
-### Phase 4 — Permission flow (½ day, has unknowns)
+### Phase 4 — Permission flow (resolved during Phase 1 research)
 
-**Research first.** Confirm how `claude --bare` actually surfaces permission
-prompts and accepts responses. Possibilities:
-1. Stream-json events on stdout, JSON responses written to stdin
-2. Only preapproval via `--allowedTools`; runtime prompts unsupported in `--bare`
-3. Some other mechanism
+**Resolved.** Possibility (2) wins. In `-p` mode the CLI does **not**
+prompt interactively. Non-allowed tool calls are auto-denied with a
+synthetic `tool_result` carrying `is_error: true` and content
+`"Claude requested permissions to use <tool>, but you haven't granted it yet."`
+The model adapts on its own; the final `result` event lists every denial in
+`permission_denials`. There is no stdin protocol for responding.
 
-Once confirmed:
-- If (1): wire `respondToPermission()` to write the response to the child's stdin
-- If (2): document that consumers must preapprove tools via
-  `allowedTools`, and `tool.permission_request` becomes informational only
-- If (3): adapt as needed
+**Implementation:**
 
-Don't guess. Run the real CLI and observe.
+- The parser emits `tool.permission_request` informationally when it sees a
+  denied `tool_result` block, and retroactively from
+  `result.permission_denials` if any survived to the result without a prior
+  per-block denial.
+- `Session.respondToPermission()` is **not part of the API** — there's
+  nothing to respond to.
+- Consumers configure tools up-front via `SessionOptions.allowedTools`,
+  `disallowedTools`, `tools`, and `permissionMode`. Document this clearly.
+- See `fixtures/07-permission-denied.ndjson` for the canonical denial wire
+  pattern that Phase 2 must parse.
 
 ### Phase 5 — Electron IPC (½ day)
 
@@ -391,8 +496,13 @@ Don't guess. Run the real CLI and observe.
 
 - **Stream-json schema drift.** The CLI is updated frequently. Mitigations:
   fixture-based tests, `meta.unknown` passthrough, public compatibility matrix.
-- **Permission flow in `--bare`.** Genuinely unclear without checking. May
-  force a docs-level workaround.
+- **`--bare` is API-key-only.** `--bare` forces `ANTHROPIC_API_KEY` and
+  refuses OAuth/keychain reads, breaking subscription auth. Default off;
+  exposed as `SessionOptions.bare` for API-key consumers who want a
+  minimal context (no hooks, plugins, CLAUDE.md).
+- **Permission flow in `-p` mode is preapproval-only.** ~~Unclear~~
+  resolved (Phase 1). No runtime prompt protocol; consumers must
+  preapprove tools.
 - **Windows subprocess management.** Meaningfully different from Unix. Test
   on Windows in Phase 1, not Phase 6.
 - **Electron context isolation / sandbox.** The renderer client must work
