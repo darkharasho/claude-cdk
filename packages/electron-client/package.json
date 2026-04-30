@@ -1,6 +1,6 @@
 {
   "name": "@claude-cdk/electron-client",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Electron renderer-process client for CDK — speaks to @claude-cdk/electron-host over IPC.",
   "type": "module",
   "main": "./dist/index.cjs",

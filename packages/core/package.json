@@ -1,6 +1,6 @@
 {
   "name": "@claude-cdk/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Core process driver, stream parser, and session manager for CDK. Electron-free.",
   "type": "module",
   "main": "./dist/index.cjs",
