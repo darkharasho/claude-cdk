@@ -20,6 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "tree-kill": "^1.2.2"
+  },
   "engines": {
     "node": ">=20"
   },

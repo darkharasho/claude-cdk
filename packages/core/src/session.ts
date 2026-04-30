@@ -16,6 +16,7 @@ import type { spawn } from 'node:child_process';
 import type { Session, SessionOptions } from './api.js';
 import { spawnCli, type SpawnHandle } from './child.js';
 import type { CDKEvent, SessionAbortedEvent } from './events.js';
+import { killChildTree } from './lifecycle.js';
 import { buildSpawnArgs } from './spawn-args.js';
 
 export interface CDKSessionDeps {
@@ -86,9 +87,9 @@ export class CDKSession implements Session {
     } finally {
       this.hasStarted = true;
       this.currentHandle = null;
-      // If we broke early due to abort, ensure the child is dead.
+      // If we broke early due to abort, ensure the child + its tree is dead.
       if (abortedDuringStream && !handle.child.killed) {
-        handle.child.kill('SIGTERM');
+        await killChildTree(handle.child, 'SIGTERM');
       }
       try {
         await handle.exitCode;
@@ -115,7 +116,7 @@ export class CDKSession implements Session {
     this.aborted = true;
     const handle = this.currentHandle;
     if (handle && !handle.child.killed) {
-      handle.child.kill('SIGTERM');
+      await killChildTree(handle.child, 'SIGTERM');
     }
   }
 

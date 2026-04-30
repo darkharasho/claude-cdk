@@ -36,7 +36,11 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@20.19.39)
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      tree-kill:
+        specifier: ^1.2.2
+        version: 1.2.2
 
   packages/electron-client:
     dependencies:
@@ -52,6 +56,10 @@ importers:
       electron:
         specifier: '>=28'
         version: 41.3.0
+    devDependencies:
+      '@claude-cdk/electron-client':
+        specifier: workspace:*
+        version: link:../electron-client
 
 packages:
 

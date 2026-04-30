@@ -10,6 +10,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import type { Readable } from 'node:stream';
 import type { CDKEvent } from './events.js';
+import { trackChild } from './lifecycle.js';
 import { StreamParser } from './parser.js';
 
 export interface SpawnCliOptions {
@@ -37,6 +38,7 @@ export function spawnCli(opts: SpawnCliOptions): SpawnHandle {
     env: opts.env,
     stdio: [opts.stdinMode ?? 'ignore', 'pipe', 'pipe'],
   });
+  trackChild(child);
 
   const parser = new StreamParser();
 
