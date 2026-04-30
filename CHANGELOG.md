@@ -45,8 +45,8 @@ Initial pre-release. All seven phases of the DESIGN.md plan are implemented.
   OAuth/keychain reads. Off by default; opt in via `SessionOptions.bare`.
 ### Tested platforms
 
-- Linux (ubuntu-latest) and Windows (windows-latest) in CI on every push.
-- macOS not yet in the matrix.
+- Linux (ubuntu-latest), Windows (windows-latest), and macOS
+  (macos-latest) in CI on every push.
 
 ### Tested CLI versions
 
