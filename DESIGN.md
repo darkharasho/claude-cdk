@@ -43,12 +43,12 @@ All events share a base shape:
 
 ```ts
 interface BaseEvent {
-  type: string;        // discriminator
-  sessionId: string;   // which session (from wire `session_id`)
-  turnId: string;      // which turn within the session (synthesized by parser)
-  seq: number;         // monotonic per-session sequence number (synthesized)
-  ts: number;          // ms epoch (synthesized on receive)
-  uuid?: string;       // wire `uuid`, when present
+  type: string; // discriminator
+  sessionId: string; // which session (from wire `session_id`)
+  turnId: string; // which turn within the session (synthesized by parser)
+  seq: number; // monotonic per-session sequence number (synthesized)
+  ts: number; // ms epoch (synthesized on receive)
+  uuid?: string; // wire `uuid`, when present
 }
 ```
 
@@ -62,53 +62,53 @@ interface BaseEvent {
 
 ```ts
 interface SessionInitEvent extends BaseEvent {
-  type: "session.init";
+  type: 'session.init';
   model: string;
   cwd: string;
-  permissionMode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan";
-  tools: string[];                                                    // wire `tools`
-  mcpServers: { name: string; status: "connected" | "failed" | "pending"; error?: string }[];
-  plugins:    { name: string; version?: string; path?: string; source?: string }[];
+  permissionMode: 'default' | 'auto' | 'acceptEdits' | 'bypassPermissions' | 'dontAsk' | 'plan';
+  tools: string[]; // wire `tools`
+  mcpServers: { name: string; status: 'connected' | 'failed' | 'pending'; error?: string }[];
+  plugins: { name: string; version?: string; path?: string; source?: string }[];
   slashCommands: string[];
   agents: string[];
   skills: string[];
-  cliVersion: string;                                                 // wire `claude_code_version`
+  cliVersion: string; // wire `claude_code_version`
   outputStyle?: string;
-  apiKeySource: "none" | "user" | "project" | "anthropic" | string;   // observed: "none" for OAuth/keychain
-  authMode: "subscription" | "apikey" | "unknown";                    // derived from apiKeySource
+  apiKeySource: 'none' | 'user' | 'project' | 'anthropic' | string; // observed: "none" for OAuth/keychain
+  authMode: 'subscription' | 'apikey' | 'unknown'; // derived from apiKeySource
   fastModeState?: string;
   analyticsDisabled?: boolean;
   memoryPaths?: Record<string, string>;
 }
 
 interface SessionReadyEvent extends BaseEvent {
-  type: "session.ready";
+  type: 'session.ready';
 }
 
 interface SessionDoneEvent extends BaseEvent {
-  type: "session.done";
-  stopReason: "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "error" | "aborted";
-  result?: string;                            // final assistant text, if any
+  type: 'session.done';
+  stopReason: 'end_turn' | 'max_tokens' | 'stop_sequence' | 'tool_use' | 'error' | 'aborted';
+  result?: string; // final assistant text, if any
   usage: TokenUsage;
   costUsd?: number;
-  durationMs: number;                         // wire `duration_ms`
-  durationApiMs?: number;                     // wire `duration_api_ms`
-  numTurns?: number;                          // wire `num_turns`
-  isError: boolean;                           // wire `is_error`
-  apiErrorStatus?: number | null;             // wire `api_error_status`, e.g. 404
-  terminalReason?: string;                    // wire `terminal_reason`, e.g. "completed"
+  durationMs: number; // wire `duration_ms`
+  durationApiMs?: number; // wire `duration_api_ms`
+  numTurns?: number; // wire `num_turns`
+  isError: boolean; // wire `is_error`
+  apiErrorStatus?: number | null; // wire `api_error_status`, e.g. 404
+  terminalReason?: string; // wire `terminal_reason`, e.g. "completed"
   permissionDenials?: { toolName: string; toolUseId: string; toolInput: unknown }[];
-  modelUsage?: Record<string, unknown>;       // wire `modelUsage`, per-model breakdown
+  modelUsage?: Record<string, unknown>; // wire `modelUsage`, per-model breakdown
 }
 
 interface SessionErrorEvent extends BaseEvent {
-  type: "session.error";
+  type: 'session.error';
   error: { code: string; message: string; recoverable: boolean };
 }
 
 interface SessionAbortedEvent extends BaseEvent {
-  type: "session.aborted";
-  reason: "user" | "timeout" | "parent_exit";
+  type: 'session.aborted';
+  reason: 'user' | 'timeout' | 'parent_exit';
 }
 ```
 
@@ -116,27 +116,27 @@ interface SessionAbortedEvent extends BaseEvent {
 
 ```ts
 interface AssistantMessageStartEvent extends BaseEvent {
-  type: "assistant.message_start";
+  type: 'assistant.message_start';
   messageId: string;
 }
 
 interface AssistantTextDeltaEvent extends BaseEvent {
-  type: "assistant.text_delta";
+  type: 'assistant.text_delta';
   messageId: string;
   delta: string;
 }
 
 interface AssistantThinkingDeltaEvent extends BaseEvent {
-  type: "assistant.thinking_delta";
+  type: 'assistant.thinking_delta';
   messageId: string;
   delta: string;
 }
 
 interface AssistantMessageCompleteEvent extends BaseEvent {
-  type: "assistant.message_complete";
+  type: 'assistant.message_complete';
   messageId: string;
-  text: string;          // full concatenated text
-  thinking?: string;     // full thinking, if any
+  text: string; // full concatenated text
+  thinking?: string; // full thinking, if any
 }
 ```
 
@@ -144,26 +144,26 @@ interface AssistantMessageCompleteEvent extends BaseEvent {
 
 ```ts
 interface ToolUseStartEvent extends BaseEvent {
-  type: "tool.use_start";
+  type: 'tool.use_start';
   toolUseId: string;
   toolName: string;
   input: Record<string, unknown>;
 }
 
 interface ToolUseCompleteEvent extends BaseEvent {
-  type: "tool.use_complete";
+  type: 'tool.use_complete';
   toolUseId: string;
 }
 
 interface ToolResultEvent extends BaseEvent {
-  type: "tool.result";
+  type: 'tool.result';
   toolUseId: string;
   result: unknown;
   isError: boolean;
 }
 
 interface PermissionRequestEvent extends BaseEvent {
-  type: "tool.permission_request";
+  type: 'tool.permission_request';
   toolName: string;
   toolUseId: string;
   input: Record<string, unknown>;
@@ -184,68 +184,68 @@ interface PermissionRequestEvent extends BaseEvent {
 
 ```ts
 interface ApiRetryEvent extends BaseEvent {
-  type: "system.api_retry";
+  type: 'system.api_retry';
   attempt: number;
   delayMs: number;
   reason: string;
 }
 
 interface CompactionEvent extends BaseEvent {
-  type: "system.compaction";
+  type: 'system.compaction';
   tokensBefore: number;
   tokensAfter: number;
 }
 
 interface PluginInstallEvent extends BaseEvent {
-  type: "system.plugin_install";
+  type: 'system.plugin_install';
   name: string;
-  status: "starting" | "complete" | "failed";
+  status: 'starting' | 'complete' | 'failed';
   error?: string;
 }
 
 interface WarningEvent extends BaseEvent {
-  type: "system.warning";
+  type: 'system.warning';
   message: string;
   code?: string;
 }
 
 interface HookStartedEvent extends BaseEvent {
-  type: "system.hook_started";
+  type: 'system.hook_started';
   hookId: string;
-  hookName: string;          // e.g. "SessionStart:startup"
-  hookEvent: string;         // e.g. "SessionStart"
+  hookName: string; // e.g. "SessionStart:startup"
+  hookEvent: string; // e.g. "SessionStart"
 }
 
 interface HookResponseEvent extends BaseEvent {
-  type: "system.hook_response";
+  type: 'system.hook_response';
   hookId: string;
   hookName: string;
   hookEvent: string;
-  outcome: "success" | "failure" | string;
+  outcome: 'success' | 'failure' | string;
   exitCode: number;
   stdout?: string;
   stderr?: string;
-  output?: string;           // raw `output` field from wire
+  output?: string; // raw `output` field from wire
 }
 
 interface PostTurnSummaryEvent extends BaseEvent {
-  type: "system.post_turn_summary";
+  type: 'system.post_turn_summary';
   summarizesUuid: string;
-  statusCategory: string;    // e.g. "review_ready"
+  statusCategory: string; // e.g. "review_ready"
   statusDetail: string;
   needsAction: string;
 }
 
 interface SystemStatusEvent extends BaseEvent {
-  type: "system.status";
-  status: string;            // e.g. "requesting"
+  type: 'system.status';
+  status: string; // e.g. "requesting"
 }
 
 interface RateLimitEvent extends BaseEvent {
-  type: "system.rate_limit";
-  status: "allowed" | "rejected" | string;
-  rateLimitType: string;     // e.g. "five_hour"
-  resetsAt?: number;         // epoch seconds
+  type: 'system.rate_limit';
+  status: 'allowed' | 'rejected' | string;
+  rateLimitType: string; // e.g. "five_hour"
+  resetsAt?: number; // epoch seconds
   overageStatus?: string;
   overageDisabledReason?: string;
   isUsingOverage?: boolean;
@@ -256,14 +256,14 @@ interface RateLimitEvent extends BaseEvent {
 
 ```ts
 interface UsageUpdateEvent extends BaseEvent {
-  type: "meta.usage";
+  type: 'meta.usage';
   usage: TokenUsage;
 }
 
 interface UnknownEvent extends BaseEvent {
-  type: "meta.unknown";
+  type: 'meta.unknown';
   rawType: string;
-  raw: unknown;          // pass-through of unrecognized stream-json blob
+  raw: unknown; // pass-through of unrecognized stream-json blob
 }
 
 interface TokenUsage {
@@ -278,16 +278,30 @@ interface TokenUsage {
 
 ```ts
 export type CDKEvent =
-  | SessionInitEvent | SessionReadyEvent | SessionDoneEvent
-  | SessionErrorEvent | SessionAbortedEvent
-  | AssistantMessageStartEvent | AssistantTextDeltaEvent
-  | AssistantThinkingDeltaEvent | AssistantMessageCompleteEvent
-  | ToolUseStartEvent | ToolUseCompleteEvent | ToolResultEvent
+  | SessionInitEvent
+  | SessionReadyEvent
+  | SessionDoneEvent
+  | SessionErrorEvent
+  | SessionAbortedEvent
+  | AssistantMessageStartEvent
+  | AssistantTextDeltaEvent
+  | AssistantThinkingDeltaEvent
+  | AssistantMessageCompleteEvent
+  | ToolUseStartEvent
+  | ToolUseCompleteEvent
+  | ToolResultEvent
   | PermissionRequestEvent
-  | ApiRetryEvent | CompactionEvent | PluginInstallEvent | WarningEvent
-  | HookStartedEvent | HookResponseEvent | PostTurnSummaryEvent
-  | SystemStatusEvent | RateLimitEvent
-  | UsageUpdateEvent | UnknownEvent;
+  | ApiRetryEvent
+  | CompactionEvent
+  | PluginInstallEvent
+  | WarningEvent
+  | HookStartedEvent
+  | HookResponseEvent
+  | PostTurnSummaryEvent
+  | SystemStatusEvent
+  | RateLimitEvent
+  | UsageUpdateEvent
+  | UnknownEvent;
 ```
 
 The `meta.unknown` event is the forward-compatibility escape hatch. Any
@@ -315,8 +329,8 @@ interface DetectResult {
   found: boolean;
   binaryPath?: string;
   cliVersion?: string;
-  authMode: "subscription" | "apikey" | "unknown";
-  reason?: string;       // populated when found === false
+  authMode: 'subscription' | 'apikey' | 'unknown';
+  reason?: string; // populated when found === false
 }
 
 interface SessionOptions {
@@ -324,17 +338,17 @@ interface SessionOptions {
   model?: string;
   allowedTools?: string[];
   disallowedTools?: string[];
-  tools?: string[];                    // restrict the built-in tool set
+  tools?: string[]; // restrict the built-in tool set
   mcpServers?: Record<string, McpServerConfig>;
   systemPrompt?: string;
   appendSystemPrompt?: string;
-  permissionMode?: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan";
-  bare?: boolean;                      // pass --bare; requires ANTHROPIC_API_KEY (no OAuth/keychain)
-  includePartialMessages?: boolean;    // pass --include-partial-messages for delta streaming
-  includeHookEvents?: boolean;         // pass --include-hook-events
-  noSessionPersistence?: boolean;      // pass --no-session-persistence
-  sessionId?: string;                  // pass --session-id <uuid>
-  resumeSessionId?: string;            // pass --resume <id>
+  permissionMode?: 'default' | 'auto' | 'acceptEdits' | 'bypassPermissions' | 'dontAsk' | 'plan';
+  bare?: boolean; // pass --bare; requires ANTHROPIC_API_KEY (no OAuth/keychain)
+  includePartialMessages?: boolean; // pass --include-partial-messages for delta streaming
+  includeHookEvents?: boolean; // pass --include-hook-events
+  noSessionPersistence?: boolean; // pass --no-session-persistence
+  sessionId?: string; // pass --session-id <uuid>
+  resumeSessionId?: string; // pass --resume <id>
 }
 
 class Session {

@@ -27,8 +27,7 @@ declare global {
 
 const client = new CDKClient(window.cdk);
 
-const $ = <T extends HTMLElement = HTMLElement>(id: string): T =>
-  document.getElementById(id) as T;
+const $ = <T extends HTMLElement = HTMLElement>(id: string): T => document.getElementById(id) as T;
 
 const promptEl = $<HTMLTextAreaElement>('prompt');
 const sendBtn = $<HTMLButtonElement>('send');
@@ -148,7 +147,10 @@ function handleEvent(ev: CDKEvent, h: EventHandlers): void {
       break;
     }
     case 'tool.permission_request':
-      appendBlock('permission', `⚠ permission denied: ${ev.toolName} (preapproval only in -p mode)`);
+      appendBlock(
+        'permission',
+        `⚠ permission denied: ${ev.toolName} (preapproval only in -p mode)`,
+      );
       break;
     case 'session.done':
       if (ev.isError) {

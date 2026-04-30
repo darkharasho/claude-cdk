@@ -6,15 +6,15 @@ be a pure function over fixtures.
 
 ## Files
 
-| File | Mode | Prompt | Notes |
-| --- | --- | --- | --- |
-| `01-simple-text.ndjson` | opus, default | "Reply with: hello" | Baseline event surface |
-| `02-single-tool-use.ndjson` | haiku, bypassPermissions | Read README → first heading | One Read call + thinking |
-| `03-multi-tool-use.ndjson` | haiku, bypassPermissions | Read README+DESIGN | Multiple tool calls |
-| `04-partial-messages.ndjson` | haiku, `--include-partial-messages` | Reply with sequence | Delta-streaming format |
-| `05-permission-probe.ndjson` | haiku, default | Bash `echo` | Bash auto-allowed (user config) |
-| `06-forced-error.ndjson` | invalid model | "hi" | API error surface |
-| `07-permission-denied.ndjson` | haiku, `--tools Read`, default | Force MCP tool use | **Permission denial in -p mode** |
+| File                          | Mode                                | Prompt                      | Notes                            |
+| ----------------------------- | ----------------------------------- | --------------------------- | -------------------------------- |
+| `01-simple-text.ndjson`       | opus, default                       | "Reply with: hello"         | Baseline event surface           |
+| `02-single-tool-use.ndjson`   | haiku, bypassPermissions            | Read README → first heading | One Read call + thinking         |
+| `03-multi-tool-use.ndjson`    | haiku, bypassPermissions            | Read README+DESIGN          | Multiple tool calls              |
+| `04-partial-messages.ndjson`  | haiku, `--include-partial-messages` | Reply with sequence         | Delta-streaming format           |
+| `05-permission-probe.ndjson`  | haiku, default                      | Bash `echo`                 | Bash auto-allowed (user config)  |
+| `06-forced-error.ndjson`      | invalid model                       | "hi"                        | API error surface                |
+| `07-permission-denied.ndjson` | haiku, `--tools Read`, default      | Force MCP tool use          | **Permission denial in -p mode** |
 
 ## Observed event taxonomy (CLI 2.1.119)
 
@@ -25,18 +25,18 @@ in the parser.
 
 ### All observed `(type, subtype)` pairs
 
-| Wire shape | Where seen | Maps to design event |
-| --- | --- | --- |
-| `system/init` | every session | `session.init` (rename `claude_code_version`→`cliVersion`, `mcp_servers`→`mcpServers`) |
-| `system/hook_started` | every session start (×4) | new event: `system.hook_started` |
-| `system/hook_response` | every session start (×4) | new event: `system.hook_response` |
-| `system/post_turn_summary` | every successful turn | new event: `system.post_turn_summary` |
-| `system/status` | partial-messages mode | new event: `system.status` (e.g. `status:"requesting"`) |
-| `assistant` (no subtype) | one per content block | `assistant.message_complete` (atomic) |
-| `user` (no subtype) | tool result | `tool.result` (extracted from content blocks) |
+| Wire shape                                           | Where seen                        | Maps to design event                                                                                                                        |
+| ---------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `system/init`                                        | every session                     | `session.init` (rename `claude_code_version`→`cliVersion`, `mcp_servers`→`mcpServers`)                                                      |
+| `system/hook_started`                                | every session start (×4)          | new event: `system.hook_started`                                                                                                            |
+| `system/hook_response`                               | every session start (×4)          | new event: `system.hook_response`                                                                                                           |
+| `system/post_turn_summary`                           | every successful turn             | new event: `system.post_turn_summary`                                                                                                       |
+| `system/status`                                      | partial-messages mode             | new event: `system.status` (e.g. `status:"requesting"`)                                                                                     |
+| `assistant` (no subtype)                             | one per content block             | `assistant.message_complete` (atomic)                                                                                                       |
+| `user` (no subtype)                                  | tool result                       | `tool.result` (extracted from content blocks)                                                                                               |
 | `stream_event` (no subtype, has nested `event.type`) | with `--include-partial-messages` | `assistant.message_start`, `assistant.text_delta`, `assistant.thinking_delta`, `assistant.message_complete` (mapped from nested SDK events) |
-| `rate_limit_event` | every session | new event: `system.rate_limit` |
-| `result/success` | end of every session | `session.done` (rich superset) |
+| `rate_limit_event`                                   | every session                     | new event: `system.rate_limit`                                                                                                              |
+| `result/success`                                     | end of every session              | `session.done` (rich superset)                                                                                                              |
 
 ### Notable schema details
 
@@ -46,6 +46,7 @@ Each `assistant` event carries one (or sometimes more) content blocks: a
 `assistant` events.
 
 **2. `user` events carry tool results.** Shape:
+
 ```json
 {
   "type": "user",

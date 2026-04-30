@@ -25,12 +25,7 @@ export interface BuildSpawnArgsOptions {
 }
 
 export function buildSpawnArgs(opts: SessionOptions, extra: BuildSpawnArgsOptions = {}): string[] {
-  const args: string[] = [
-    '-p',
-    '--output-format',
-    'stream-json',
-    '--verbose',
-  ];
+  const args: string[] = ['-p', '--output-format', 'stream-json', '--verbose'];
 
   if (extra.streamingInput) {
     args.push('--input-format', 'stream-json');

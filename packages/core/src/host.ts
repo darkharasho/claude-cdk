@@ -5,13 +5,7 @@
  */
 
 import type { spawn } from 'node:child_process';
-import type {
-  CDKHostOptions,
-  DetectResult,
-  Session,
-  SessionMeta,
-  SessionOptions,
-} from './api.js';
+import type { CDKHostOptions, DetectResult, Session, SessionMeta, SessionOptions } from './api.js';
 import { detectClaude } from './detect.js';
 import type { CDKEvent } from './events.js';
 import { CDKSession } from './session.js';

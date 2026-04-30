@@ -122,7 +122,12 @@ describe('StreamParser — fixture 02 single tool use', () => {
     }
     const toolResult = events.find((e) => e.type === 'tool.result');
     expect(toolResult).toBeDefined();
-    if (toolResult && toolResult.type === 'tool.result' && useStart && useStart.type === 'tool.use_start') {
+    if (
+      toolResult &&
+      toolResult.type === 'tool.result' &&
+      useStart &&
+      useStart.type === 'tool.use_start'
+    ) {
       expect(toolResult.toolUseId).toBe(useStart.toolUseId);
       expect(toolResult.isError).toBe(false);
     }

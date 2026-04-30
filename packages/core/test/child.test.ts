@@ -19,7 +19,10 @@ function loadFixture(name: string): string {
  * over stdout (in arbitrary chunks to exercise the buffer-splitting logic),
  * then exits with the given code.
  */
-function fakeSpawnFromFixture(fixture: string, opts: { exitCode?: number; chunkSize?: number } = {}) {
+function fakeSpawnFromFixture(
+  fixture: string,
+  opts: { exitCode?: number; chunkSize?: number } = {},
+) {
   return (() => {
     const child = new EventEmitter() as EventEmitter & {
       stdout: Readable;

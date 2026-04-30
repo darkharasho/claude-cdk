@@ -6,13 +6,7 @@ describe('buildSpawnArgs', () => {
 
   it('emits the canonical single-shot arg shape with no options', () => {
     const args = buildSpawnArgs(baseOpts, { prompt: 'hello' });
-    expect(args).toEqual([
-      '-p',
-      '--output-format',
-      'stream-json',
-      '--verbose',
-      'hello',
-    ]);
+    expect(args).toEqual(['-p', '--output-format', 'stream-json', '--verbose', 'hello']);
   });
 
   it('omits prompt when streamingInput is set, and adds --input-format', () => {
@@ -92,7 +86,9 @@ describe('buildSpawnArgs', () => {
     const idx = args.indexOf('--mcp-config');
     expect(idx).toBeGreaterThan(-1);
     const json = JSON.parse(args[idx + 1] ?? '{}');
-    expect(json).toEqual({ mcpServers: { local: { command: 'mcp-server', args: ['--port', '0'] } } });
+    expect(json).toEqual({
+      mcpServers: { local: { command: 'mcp-server', args: ['--port', '0'] } },
+    });
   });
 
   it('--resume takes precedence over --session-id when both are set', () => {

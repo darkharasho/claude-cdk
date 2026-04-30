@@ -160,11 +160,7 @@ interface CommandResult {
   code: number;
 }
 
-function runCommand(
-  cmd: string,
-  args: string[],
-  spawnFn?: typeof spawn,
-): Promise<CommandResult> {
+function runCommand(cmd: string, args: string[], spawnFn?: typeof spawn): Promise<CommandResult> {
   const sp = spawnFn ?? spawn;
   return new Promise((resolve, reject) => {
     const child = sp(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'] });

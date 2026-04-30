@@ -318,18 +318,14 @@ export class StreamParser {
       ...(typeof wire.num_turns === 'number' ? { numTurns: wire.num_turns } : {}),
       isError: wire.is_error === true,
       apiErrorStatus: (wire.api_error_status as number | null | undefined) ?? null,
-      ...(typeof wire.terminal_reason === 'string'
-        ? { terminalReason: wire.terminal_reason }
-        : {}),
+      ...(typeof wire.terminal_reason === 'string' ? { terminalReason: wire.terminal_reason } : {}),
       ...(Array.isArray(wire.permission_denials)
         ? {
-            permissionDenials: (wire.permission_denials as Record<string, unknown>[]).map(
-              (d) => ({
-                toolName: String(d.tool_name ?? ''),
-                toolUseId: String(d.tool_use_id ?? ''),
-                toolInput: d.tool_input,
-              }),
-            ),
+            permissionDenials: (wire.permission_denials as Record<string, unknown>[]).map((d) => ({
+              toolName: String(d.tool_name ?? ''),
+              toolUseId: String(d.tool_use_id ?? ''),
+              toolInput: d.tool_input,
+            })),
           }
         : {}),
       ...(wire.modelUsage && typeof wire.modelUsage === 'object'
@@ -377,9 +373,7 @@ export class StreamParser {
       ...(typeof wire.output_style === 'string' ? { outputStyle: wire.output_style } : {}),
       apiKeySource,
       authMode,
-      ...(typeof wire.fast_mode_state === 'string'
-        ? { fastModeState: wire.fast_mode_state }
-        : {}),
+      ...(typeof wire.fast_mode_state === 'string' ? { fastModeState: wire.fast_mode_state } : {}),
       ...(typeof wire.analytics_disabled === 'boolean'
         ? { analyticsDisabled: wire.analytics_disabled }
         : {}),
@@ -445,9 +439,7 @@ export class StreamParser {
       ...(typeof info.overageDisabledReason === 'string'
         ? { overageDisabledReason: info.overageDisabledReason }
         : {}),
-      ...(typeof info.isUsingOverage === 'boolean'
-        ? { isUsingOverage: info.isUsingOverage }
-        : {}),
+      ...(typeof info.isUsingOverage === 'boolean' ? { isUsingOverage: info.isUsingOverage } : {}),
     };
   }
 

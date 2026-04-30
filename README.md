@@ -46,30 +46,30 @@ multi-turn), see [`examples/minimal-electron`](./examples/minimal-electron).
 All events share `{ type, sessionId, turnId, seq, ts }`. The discriminated
 union is exported as `CDKEvent`.
 
-| Group       | Type                            | When                                              |
-| ----------- | ------------------------------- | ------------------------------------------------- |
-| Lifecycle   | `session.init`                  | Child started, model/cwd/tools/MCP/plugins known  |
-|             | `session.ready`                 | Ready for first prompt                            |
-|             | `session.done`                  | Turn finished — stopReason, usage, costUsd        |
-|             | `session.error`                 | Recoverable or fatal error                        |
-|             | `session.aborted`               | `abort()` or parent exit                          |
-| Assistant   | `assistant.message_start`       | New assistant message in stream                   |
-|             | `assistant.text_delta`          | Streaming text chunk                              |
-|             | `assistant.thinking_delta`      | Streaming extended-thinking chunk                 |
-|             | `assistant.message_complete`    | Final concatenated text/thinking                  |
-| Tool use    | `tool.use_start`                | Model invoked a tool                              |
-|             | `tool.use_complete`             | Invocation block closed                           |
-|             | `tool.result`                   | Tool returned (success or error)                  |
-|             | `tool.permission_request`       | Informational only — see permission model below   |
-| System      | `system.api_retry`              | CLI retried an API call                           |
-|             | `system.compaction`             | Conversation auto-compacted                       |
-|             | `system.plugin_install`         | Plugin install lifecycle                          |
-|             | `system.warning`                | Non-fatal warning                                 |
-|             | `system.hook_started` / `hook_response` | User hook ran                             |
-|             | `system.post_turn_summary`      | End-of-turn summary                               |
-|             | `system.status` / `rate_limit`  | Status/rate-limit signals                         |
-| Meta        | `meta.usage`                    | Mid-turn token usage update                       |
-|             | `meta.unknown`                  | Forward-compat passthrough — see below            |
+| Group     | Type                                    | When                                             |
+| --------- | --------------------------------------- | ------------------------------------------------ |
+| Lifecycle | `session.init`                          | Child started, model/cwd/tools/MCP/plugins known |
+|           | `session.ready`                         | Ready for first prompt                           |
+|           | `session.done`                          | Turn finished — stopReason, usage, costUsd       |
+|           | `session.error`                         | Recoverable or fatal error                       |
+|           | `session.aborted`                       | `abort()` or parent exit                         |
+| Assistant | `assistant.message_start`               | New assistant message in stream                  |
+|           | `assistant.text_delta`                  | Streaming text chunk                             |
+|           | `assistant.thinking_delta`              | Streaming extended-thinking chunk                |
+|           | `assistant.message_complete`            | Final concatenated text/thinking                 |
+| Tool use  | `tool.use_start`                        | Model invoked a tool                             |
+|           | `tool.use_complete`                     | Invocation block closed                          |
+|           | `tool.result`                           | Tool returned (success or error)                 |
+|           | `tool.permission_request`               | Informational only — see permission model below  |
+| System    | `system.api_retry`                      | CLI retried an API call                          |
+|           | `system.compaction`                     | Conversation auto-compacted                      |
+|           | `system.plugin_install`                 | Plugin install lifecycle                         |
+|           | `system.warning`                        | Non-fatal warning                                |
+|           | `system.hook_started` / `hook_response` | User hook ran                                    |
+|           | `system.post_turn_summary`              | End-of-turn summary                              |
+|           | `system.status` / `rate_limit`          | Status/rate-limit signals                        |
+| Meta      | `meta.usage`                            | Mid-turn token usage update                      |
+|           | `meta.unknown`                          | Forward-compat passthrough — see below           |
 
 `meta.unknown` is the forward-compatibility escape hatch: any stream-json
 blob the parser doesn't recognize is wrapped verbatim and forwarded. CLI
@@ -107,9 +107,9 @@ response channel for "approve this Bash call." Consequences:
 
 CDK is tested against the following `claude` CLI versions:
 
-| CLI version | Status   | Notes                                  |
-| ----------- | -------- | -------------------------------------- |
-| 2.1.123     | ✅ tested | Development baseline (Phase 1–7)       |
+| CLI version | Status    | Notes                            |
+| ----------- | --------- | -------------------------------- |
+| 2.1.123     | ✅ tested | Development baseline (Phase 1–7) |
 
 Older versions may work — `meta.unknown` ensures unrecognized events pass
 through rather than crash — but are not in CI. If you hit a schema

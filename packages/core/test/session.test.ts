@@ -110,7 +110,12 @@ function neverEndingFakeSpawn() {
     };
     return child;
   }) as never;
-  return { fn, get killSignaled() { return killSignaled; } };
+  return {
+    fn,
+    get killSignaled() {
+      return killSignaled;
+    },
+  };
 }
 
 async function collect(events: AsyncIterable<CDKEvent>): Promise<CDKEvent[]> {
@@ -121,10 +126,7 @@ async function collect(events: AsyncIterable<CDKEvent>): Promise<CDKEvent[]> {
 
 describe('CDKHost.startSession', () => {
   it('first send uses --session-id <id>; second send uses --resume <id>', async () => {
-    const { fn, calls } = recordingFakeSpawn([
-      '01-simple-text.ndjson',
-      '01-simple-text.ndjson',
-    ]);
+    const { fn, calls } = recordingFakeSpawn(['01-simple-text.ndjson', '01-simple-text.ndjson']);
     const host = new CDKHost({ binaryPath: '/fake/claude', spawnFn: fn });
     const session = await host.startSession({ cwd: '/work', model: 'haiku' });
     await collect(session.send('first'));
@@ -234,10 +236,7 @@ describe('CDKSession.abort', () => {
 describe('CDKSession.close', () => {
   it('subsequent send() throws after close', async () => {
     const { fn } = recordingFakeSpawn(['01-simple-text.ndjson']);
-    const session = new CDKSession(
-      { cwd: '/x' },
-      { binaryPath: '/fake/claude', spawnFn: fn },
-    );
+    const session = new CDKSession({ cwd: '/x' }, { binaryPath: '/fake/claude', spawnFn: fn });
     await session.close();
     await expect(collect(session.send('hi'))).rejects.toThrow(/closed|aborted/);
   });

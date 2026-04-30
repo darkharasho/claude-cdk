@@ -163,7 +163,9 @@ button {
   padding: 6px 14px;
   font-size: 13px;
   cursor: pointer;
-  transition: border-color 120ms ease, color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
 }
 
 button:hover:not(:disabled) {
