@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+    <title>CDK · minimal-electron</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>@claude-cdk · minimal-electron</h1>
+      <span id="session-info">(no session)</span>
+    </header>
+    <main>
+      <div id="output"></div>
+      <div id="composer">
+        <textarea id="prompt" placeholder="Type a prompt — Cmd/Ctrl+Enter to send" rows="3"></textarea>
+        <div class="buttons">
+          <button id="send" type="button">Send</button>
+          <button id="abort" type="button">Abort</button>
+          <button id="new-session" type="button">New session</button>
+        </div>
+      </div>
+      <div id="status"></div>
+    </main>
+    <script src="../renderer.js"></script>
+  </body>
+</html>

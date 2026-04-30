@@ -1,0 +1,25 @@
+{
+  "name": "minimal-electron",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Minimal Electron app demonstrating @claude-cdk/electron-host + @claude-cdk/electron-client end-to-end.",
+  "main": "dist/main.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:renderer": "esbuild src/renderer.ts --bundle --outfile=dist/renderer.js --format=iife --platform=browser --sourcemap",
+    "build": "pnpm run clean && pnpm run build:main && pnpm run build:renderer && cp -r src/public dist/public",
+    "start": "pnpm run build && electron .",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "test": "echo \"no tests for example app\" && exit 0"
+  },
+  "dependencies": {
+    "@claude-cdk/electron-host": "workspace:*",
+    "@claude-cdk/electron-client": "workspace:*"
+  },
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.7.0"
+  }
+}
